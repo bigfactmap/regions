@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BigFact Map · The biggest company in every region</title>
+<meta name="description" content="Tap any region and see its biggest company. Interactive maps from the BigFact YouTube Shorts.">
+<meta property="og:title" content="BigFact Map">
+<meta property="og:description" content="The biggest company in every region. Tap the map.">
+<meta property="og:image" content="icon-192.png">
+<meta name="theme-color" content="#0B1020">
+<link rel="icon" href="favicon.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0B1020; --panel:#121a30; --panel2:#18223d; --line:rgba(255,255,255,.08);
+  --text:#F5F7FB; --muted:#8C96B0; --yellow:#FFD21E; --gold:#FACC15; --red:#EF4444; --green:#22C55E;
+  --display:'Anton','Impact','Arial Narrow',sans-serif;
+  --ui:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--bg);color:var(--text);font-family:var(--ui);-webkit-text-size-adjust:100%}
+body{min-height:100vh;background:radial-gradient(1200px 600px at 50% -200px,#1a2550 0%,transparent 70%),var(--bg)}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+a{color:inherit}
+.wrap{max-width:1100px;margin:0 auto;padding:16px 16px 40px}
+
+/* header */
+header{display:flex;align-items:center;gap:12px;padding:6px 0 14px}
+header img{width:40px;height:40px;border-radius:10px}
+.brand{font-family:var(--display);font-size:26px;letter-spacing:.5px;line-height:1}
+.brand span{color:var(--yellow)}
+.tag{color:var(--muted);font-size:13px;margin-top:3px}
+header .yt{margin-left:auto;font-size:13px;font-weight:800;padding:9px 12px;border-radius:999px;background:#e62117;text-decoration:none;white-space:nowrap}
+
+/* country chips */
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 0 12px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:999px;background:var(--panel);border:1px solid var(--line);font-weight:600;font-size:14px}
+.chip[aria-pressed="true"]{background:var(--text);color:var(--bg);border-color:var(--text)}
+.chip.soon{opacity:.45;cursor:default}
+
+/* title */
+.title{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin:6px 0 12px}
+.title h1{white-space:nowrap}
+@media(max-width:560px){.modes{width:100%}.modes button{flex:1}}
+.title h1{font-family:var(--display);font-weight:400;font-size:clamp(30px,7vw,44px);line-height:1;letter-spacing:.5px}
+.title h1 em{font-style:normal;color:var(--yellow)}
+.title p{color:var(--muted);font-size:13px;margin-top:6px}
+
+/* mode switch */
+.modes{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px;flex:0 0 auto}
+.modes button{padding:8px 12px;border-radius:999px;font-size:13px;font-weight:800;color:var(--muted)}
+.modes button[aria-pressed="true"]{background:var(--yellow);color:#111}
+
+/* layout */
+.grid{display:grid;gap:16px}
+@media(min-width:900px){.grid{grid-template-columns:1.15fr .85fr;align-items:start}.side{position:sticky;top:16px}}
+
+/* map */
+.mapbox{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:10px;position:relative}
+svg.map{display:block;width:100%;height:auto;max-height:78vh;touch-action:manipulation}
+.reg{stroke:var(--bg);stroke-width:1.6;stroke-linejoin:round;cursor:pointer;transition:fill-opacity .2s,opacity .2s,stroke .2s}
+.reg:hover{fill-opacity:.75}
+.reg:focus{outline:none}
+.reg.sel{fill-opacity:1;stroke:#fff;stroke-width:3.2}
+.map.has-sel .reg:not(.sel){opacity:.55}
+.map.guess .reg{fill:#26324f!important;fill-opacity:1}
+.map.guess .reg:hover{fill:#33436a!important}
+.map.guess .reg.right{fill:var(--gold)!important;opacity:1}
+.map.guess .reg.wrong{fill:var(--red)!important;opacity:1}
+.inset{fill:rgba(255,255,255,.015);stroke:rgba(255,255,255,.18);stroke-width:1.5;stroke-dasharray:6 6;cursor:pointer}
+.inset-l{fill:var(--muted);font:700 20px var(--ui);letter-spacing:1px;pointer-events:none;text-transform:uppercase}
+.hit{fill:transparent;cursor:pointer}
+.crown{font-size:30px;pointer-events:none;text-anchor:middle;dominant-baseline:central}
+.map.guess .crown{display:none}
+.hint{position:absolute;left:0;right:0;bottom:14px;text-align:center;font-size:12px;color:var(--muted);pointer-events:none}
+
+/* card */
+.card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:22px;padding:18px 18px 20px;min-height:178px;position:relative;overflow:hidden}
+.card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--c,var(--muted))}
+.card .k{font-size:12px;font-weight:800;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase}
+.card .co{font-family:var(--display);font-size:clamp(28px,7vw,38px);line-height:1.05;margin:6px 0 4px;letter-spacing:.3px}
+.card .meta{color:#c8cfe0;font-size:14px}
+.card .big{font-family:var(--display);font-size:clamp(40px,10vw,56px);line-height:1;margin-top:12px;color:var(--yellow)}
+.card .top{display:inline-block;margin-top:14px;padding:8px 12px;border-radius:10px;background:rgba(255,210,30,.12);color:var(--yellow);font-weight:900;font-size:13px;letter-spacing:.8px}
+.card .note{margin-top:12px;font-weight:800;font-size:14px;color:var(--yellow)}
+.card .rank{margin-top:10px;font-size:13px;color:var(--muted)}
+.card .empty{color:var(--muted);font-size:15px;line-height:1.5;padding-top:8px}
+.card .empty b{color:var(--text)}
+.card .btn{margin-top:14px;display:inline-block;padding:10px 14px;border-radius:12px;background:var(--text);color:var(--bg);font-weight:800;font-size:14px}
+.pop{animation:pop .35s ease}
+@keyframes pop{0%{transform:scale(.96);opacity:.4}100%{transform:none;opacity:1}}
+
+/* ranking */
+section{margin-top:16px}
+h2{font-size:13px;font-weight:900;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin:0 0 10px 4px}
+.rank-list{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:6px}
+.row{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;width:100%;text-align:left;padding:9px 10px;border-radius:14px}
+.row:hover,.row.sel{background:rgba(255,255,255,.05)}
+.row .n{font-weight:900;color:var(--muted);font-size:13px;text-align:center}
+.row .who{min-width:0}
+.row .who b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .who small{display:block;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .bar{grid-column:2/4;height:5px;border-radius:5px;background:var(--c);margin-top:-4px;opacity:.9}
+.row .v{font-weight:900;font-size:14px;font-variant-numeric:tabular-nums}
+.row .v.top1{color:var(--yellow);font-size:11px;letter-spacing:.5px}
+.sep{font-size:12px;color:var(--muted);padding:12px 12px 4px}
+
+/* about */
+.about{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:16px 18px;font-size:13px;color:#c8cfe0;line-height:1.55}
+.about li{margin-left:18px}
+footer{margin-top:22px;text-align:center;color:var(--muted);font-size:12px;line-height:1.7}
+footer a{color:var(--text);font-weight:600}
+.err{padding:40px 10px;text-align:center;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img src="icon-192.png" alt="">
+    <div>
+      <div class="brand">Big<span>Fact</span> Map</div>
+      <div class="tag">The biggest company in every region</div>
+    </div>
+    <a class="yt" id="ytChannel" href="#" target="_blank" rel="noopener" hidden>▶ YouTube</a>
+  </header>
+
+  <nav class="chips" id="chips" aria-label="Countries"></nav>
+
+  <main id="app"><div class="err">Loading…</div></main>
+
+  <footer>
+    Data from public company rankings and official registers.<br>
+    Spotted a mistake? Tell us in the comments of the Short.
+  </footer>
+</div>
+
+<script>
+const CAT = {auto:"#3B82F6",energy:"#F59E0B",retail:"#22C55E",paper:"#84CC16",food:"#F97316",industry:"#A855F7",
+  mining:"#EF4444",air:"#06B6D4",gold:"#FACC15",steel:"#EF4444",bet:"#EC4899",fuel:"#F43F5E"};
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const money = m => m >= 1000 ? `€${(m/1000).toFixed(2)}B` : `€${Math.round(m)}M`;
+const slug = s => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+const store = {
+  get(k){ try{ return JSON.parse(localStorage.getItem(k)) }catch(e){ return null } },
+  set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)) }catch(e){} }
+};
+
+let INDEX = null, DATA = null, COUNTRY = null, MODE = "explore", SEL = null, GUESSED = null;
+const cache = {};
+
+async function boot(){
+  try{
+    INDEX = await (await fetch("countries.json", {cache:"no-cache"})).json();
+  }catch(e){ $("#app").innerHTML = `<div class="err">Couldn't load the map list.</div>`; return; }
+  if (INDEX.channel){ const a = $("#ytChannel"); a.href = INDEX.channel; a.hidden = false; }
+  window.addEventListener("hashchange", route);
+  route();
+}
+
+function route(){
+  const [c, r] = location.hash.replace(/^#\/?/, "").split("/");
+  const list = INDEX.countries;
+  const found = list.find(x => x.id === c) || list[0];
+  if (!found){ $("#app").innerHTML = `<div class="err">No countries yet.</div>`; return; }
+  load(found, r);
+}
+
+async function load(meta, regionSlug){
+  if (!COUNTRY || COUNTRY.id !== meta.id){
+    COUNTRY = meta; SEL = null; GUESSED = null;
+    try{
+      DATA = cache[meta.id] || (cache[meta.id] = await (await fetch(`${meta.id}.json`, {cache:"no-cache"})).json());
+    }catch(e){ $("#app").innerHTML = `<div class="err">Couldn't load ${esc(meta.name)}.</div>`; return; }
+    prepare(DATA);
+    renderShell();
+  }
+  renderChips();
+  if (regionSlug){
+    const r = DATA.regions.find(x => slug(x.region) === regionSlug);
+    if (r && MODE === "explore") select(r.id, false);
+  }
+}
+
+function prepare(d){
+  const confirmed = d.regions.filter(r => r.revenue_eur_m != null).sort((a,b) => b.revenue_eur_m - a.revenue_eur_m);
+  confirmed.forEach((r,i) => r.rank = i + 1);
+  d.top = confirmed[0];
+  d.confirmedCount = confirmed.length;
+  d.byId = Object.fromEntries(d.regions.map(r => [r.id, r]));
+  // bounding box of everything that's drawn
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  for (const r of d.regions){
+    const n = r.path.match(/-?\d+(\.\d+)?/g).map(Number);
+    let bx0=1e9,by0=1e9,bx1=-1e9,by1=-1e9;
+    for (let i=0;i<n.length;i+=2){ bx0=Math.min(bx0,n[i]); bx1=Math.max(bx1,n[i]); by0=Math.min(by0,n[i+1]); by1=Math.max(by1,n[i+1]); }
+    r.box = [bx0,by0,bx1,by1];
+    x0=Math.min(x0,bx0); y0=Math.min(y0,by0); x1=Math.max(x1,bx1); y1=Math.max(y1,by1);
+  }
+  for (const b of Object.values(d.insets || {})){ x0=Math.min(x0,b[0]); y0=Math.min(y0,b[1]); x1=Math.max(x1,b[2]); y1=Math.max(y1,b[3]); }
+  const p = 14; d.view = [x0-p, y0-p, x1-x0+2*p, y1-y0+2*p];
+}
+
+function renderChips(){
+  $("#chips").innerHTML = INDEX.countries.map(c =>
+    `<button class="chip" aria-pressed="${c.id===COUNTRY.id}" data-id="${esc(c.id)}">${c.flag||""} ${esc(c.name)}</button>`
+  ).join("") + `<span class="chip soon" aria-hidden="true">More soon…</span>`;
+  $("#chips").querySelectorAll("button").forEach(b => b.onclick = () => { location.hash = b.dataset.id; });
+}
+
+function renderShell(){
+  const d = DATA, unit = d.unit || "region", units = unit + "s";
+  const n = d.regions.length;
+  // inset boxes (islands, enclaves): the whole box is tappable for its region
+  const insetRects = Object.entries(d.insets || {}).map(([id, b]) => {
+    const r = d.byId[id];
+    return `<rect class="inset" data-id="${esc(id)}" x="${b[0]}" y="${b[1]}" width="${b[2]-b[0]}" height="${b[3]-b[1]}" rx="18"/>` +
+      (r ? `<text class="inset-l" x="${b[0]+16}" y="${b[1]+30}">${esc(r.region)}</text>` : "");
+  }).join("");
+  const paths = d.regions.map(r =>
+    `<path class="reg" data-id="${esc(r.id)}" d="${r.path}" fill="${CAT[r.cat]||"#64748B"}" fill-opacity=".42" tabindex="0" role="button" aria-label="${esc(r.region)}: ${esc(r.company)}"/>`).join("");
+  // bigger tap targets for tiny regions
+  const hits = d.regions.filter(r => (r.box[2]-r.box[0]) < 60 || (r.box[3]-r.box[1]) < 60).map(r =>
+    `<circle class="hit" data-id="${esc(r.id)}" cx="${r.label[0]}" cy="${r.label[1]}" r="26"/>`).join("");
+  const gold = d.regions.find(r => r.cat === "gold") || d.top;
+  const crown = gold ? `<text class="crown" x="${gold.label[0]}" y="${gold.label[1]}">👑</text>` : "";
+  const video = COUNTRY.video ? ` · <a href="${esc(COUNTRY.video)}" target="_blank" rel="noopener">Watch the Short ▶</a>` : "";
+
+  $("#app").innerHTML = `
+    <div class="title">
+      <div>
+        <h1>${esc(d.country.toUpperCase())} <em>· ${d.year}</em></h1>
+        <p>${n} ${units} · ${n} giants${video}</p>
+      </div>
+      <div class="modes" role="group" aria-label="Mode">
+        <button data-m="explore" aria-pressed="${MODE==="explore"}">Explore</button>
+        <button data-m="guess" aria-pressed="${MODE==="guess"}">🎯 Guess #1</button>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="mapbox">
+        <svg class="map ${MODE==="guess"?"guess":""}" id="map" viewBox="${d.view.join(" ")}" xmlns="http://www.w3.org/2000/svg">
+          ${insetRects}${paths}${hits}${crown}
+        </svg>
+      </div>
+      <div class="side">
+        <div class="card" id="card"></div>
+        <section>
+          <h2>Ranking by revenue</h2>
+          <div class="rank-list" id="ranking"></div>
+        </section>
+      </div>
+    </div>
+    <section>
+      <h2>How we pick the #1</h2>
+      <div class="about">
+        <ul>
+          <li>Biggest company = highest ${d.year} revenue of the company itself (not the whole group).</li>
+          <li>A company counts where its head office is registered.</li>
+          <li><b>#1 Top seller</b> = biggest in the ${unit}, but we couldn't confirm the exact revenue, so we don't show a number.</li>
+          <li>Sources: ${esc(d.sources || d.source_line)}.</li>
+        </ul>
+      </div>
+    </section>`;
+
+  const svg = $("#map");
+  svg.addEventListener("click", e => { const id = e.target.dataset && e.target.dataset.id; if (id) onTap(id); });
+  svg.addEventListener("keydown", e => { if ((e.key==="Enter"||e.key===" ") && e.target.dataset.id){ e.preventDefault(); onTap(e.target.dataset.id); } });
+  $("#app").querySelectorAll(".modes button").forEach(b => b.onclick = () => setMode(b.dataset.m));
+  renderRanking();
+  renderCard();
+}
+
+function setMode(m){
+  MODE = m; SEL = null; GUESSED = null;
+  renderShell();
+}
+
+function onTap(id){
+  if (MODE === "guess"){ guess(id); return; }
+  select(id, true);
+}
+
+function select(id, updateHash){
+  SEL = id;
+  const svg = $("#map");
+  svg.classList.add("has-sel");
+  svg.querySelectorAll(".reg").forEach(p => p.classList.toggle("sel", p.dataset.id === id));
+  const sel = svg.querySelector(`.reg[data-id="${CSS.escape(id)}"]`);
+  if (sel) svg.insertBefore(sel, svg.querySelector(".hit, .crown")); // bring to front (outline not hidden)
+  document.querySelectorAll(".row").forEach(r => r.classList.toggle("sel", r.dataset.id === id));
+  renderCard(true);
+  if (updateHash) history.replaceState(null, "", `#${COUNTRY.id}/${slug(DATA.byId[id].region)}`);
+}
+
+function guess(id){
+  if (GUESSED) return;
+  const d = DATA, right = d.top.id, svg = $("#map");
+  GUESSED = id;
+  svg.querySelector(`.reg[data-id="${CSS.escape(right)}"]`).classList.add("right");
+  if (id !== right) svg.querySelector(`.reg[data-id="${CSS.escape(id)}"]`).classList.add("wrong");
+  const score = store.get("bigfact_guesses") || {};
+  score[COUNTRY.id] = id === right;
+  store.set("bigfact_guesses", score);
+  renderCard(true);
+}
+
+function renderCard(anim){
+  const c = $("#card"), d = DATA, unit = d.unit || "region";
+  if (MODE === "guess"){
+    c.style.setProperty("--c", "var(--yellow)");
+    if (!GUESSED){
+      c.innerHTML = `<div class="k">Guess mode</div>
+        <div class="co">Where is ${esc(d.country)}'s #1?</div>
+        <div class="empty">Tap the <b>${unit}</b> you think has the biggest company in the whole country.</div>`;
+    } else {
+      const t = d.top, g = d.byId[GUESSED], ok = GUESSED === t.id;
+      const score = store.get("bigfact_guesses") || {};
+      const wins = Object.values(score).filter(Boolean).length, tries = Object.keys(score).length;
+      c.innerHTML = `<div class="k">${ok ? "🎉 Correct!" : "❌ Not this time"}</div>
+        <div class="co">${esc(t.company)}</div>
+        <div class="meta">${esc(t.region)} · ${esc(t.sector)}</div>
+        <div class="big" data-count="${t.revenue_eur_m}">${money(t.revenue_eur_m)}</div>
+        ${ok ? "" : `<div class="rank">You picked ${esc(g.region)}: ${esc(g.company)}${g.revenue_eur_m!=null ? " · " + money(g.revenue_eur_m) : ""}</div>`}
+        <div class="rank">Your score: ${wins}/${tries} ${tries===1?"country":"countries"}</div>
+        <button class="btn" id="again">Explore the map →</button>`;
+      $("#again").onclick = () => setMode("explore");
+      countUp(c.querySelector(".big"));
+    }
+  } else if (!SEL){
+    c.style.setProperty("--c", "var(--muted)");
+    c.innerHTML = `<div class="k">${esc(d.country)} · ${d.regions.length} ${unit}s</div>
+      <div class="co">Tap a ${unit}</div>
+      <div class="empty">See its biggest company, what it does and how much it sells.<br>👑 marks the #1 in the whole country.</div>`;
+  } else {
+    const r = d.byId[SEL];
+    c.style.setProperty("--c", CAT[r.cat] || "#64748B");
+    const meta = [r.sector, r.hq ? r.hq : (r.founded ? `Founded ${r.founded}` : "")].filter(Boolean).map(esc).join(" · ");
+    const stat = r.revenue_eur_m != null
+      ? `<div class="big" data-count="${r.revenue_eur_m}">${money(r.revenue_eur_m)}</div>`
+      : `<div class="top">#1 TOP SELLER IN THE ${unit.toUpperCase()}</div>`;
+    const rank = r.rank && !(r.rank === 1 && /#1/.test(r.note || "")) ? `<div class="rank">${r.rank === 1 ? "👑 Biggest in all of " + esc(d.country) : `#${r.rank} of ${d.confirmedCount} with confirmed revenue`}</div>` : "";
+    c.innerHTML = `<div class="k">${esc(r.region)}</div>
+      <div class="co">${esc(r.company)}</div>
+      <div class="meta">${meta}</div>
+      ${stat}
+      ${r.note ? `<div class="note">${esc(r.note)}</div>` : ""}
+      ${rank}`;
+    countUp(c.querySelector(".big"));
+  }
+  if (anim){ c.classList.remove("pop"); void c.offsetWidth; c.classList.add("pop"); }
+}
+
+function countUp(el){
+  if (!el || !el.dataset.count) return;
+  const target = +el.dataset.count, t0 = performance.now(), dur = 700;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const step = now => {
+    const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+    el.textContent = money(target * e);
+    if (k < 1) requestAnimationFrame(step); else el.textContent = money(target);
+  };
+  requestAnimationFrame(step);
+}
+
+function renderRanking(){
+  const d = DATA, max = d.top ? d.top.revenue_eur_m : 1;
+  const conf = d.regions.filter(r => r.rank).sort((a,b) => a.rank - b.rank);
+  const rest = d.regions.filter(r => !r.rank);
+  const hide = MODE === "guess";
+  const row = (r, n) => `<button class="row ${r.id===SEL?"sel":""}" data-id="${esc(r.id)}" style="--c:${CAT[r.cat]||"#64748B"}">
+      <span class="n">${n}</span>
+      <span class="who"><b>${esc(r.company)}</b><small>${esc(r.region)} · ${esc(r.sector)}</small></span>
+      <span class="v ${r.rank?"":"top1"}">${r.rank ? money(r.revenue_eur_m) : "#1 TOP SELLER"}</span>
+      ${r.rank ? `<span class="bar" style="width:${Math.max(3, r.revenue_eur_m / max * 100)}%"></span>` : ""}
+    </button>`;
+  $("#ranking").innerHTML = hide
+    ? `<div class="sep">Hidden while you guess 🤫</div>`
+    : conf.map(r => row(r, r.rank)).join("") +
+      (rest.length ? `<div class="sep">Revenue not confirmed</div>` + rest.map(r => row(r, "–")).join("") : "");
+  $("#ranking").querySelectorAll(".row").forEach(b => b.onclick = () => {
+    select(b.dataset.id, true);
+    if (window.innerWidth < 900) $("#map").scrollIntoView({behavior:"smooth", block:"start"});
+  });
+}
+
+boot();
+</script>
+</body>
+</html>
