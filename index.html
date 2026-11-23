@@ -141,7 +141,8 @@ footer a{color:var(--text);font-weight:600}
 
 <script>
 const CAT = {auto:"#3B82F6",energy:"#F59E0B",retail:"#22C55E",paper:"#84CC16",food:"#F97316",industry:"#A855F7",
-  mining:"#EF4444",air:"#06B6D4",gold:"#FACC15",steel:"#EF4444",bet:"#EC4899",fuel:"#F43F5E"};
+  mining:"#EF4444",air:"#06B6D4",gold:"#FACC15",steel:"#EF4444",bet:"#EC4899",fuel:"#F43F5E",
+  tech:"#818CF8",health:"#2DD4BF",telecom:"#38BDF8",defense:"#CBD5E1",pharma:"#F472B6"};
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money = m => m >= 1000 ? `€${(m/1000).toFixed(2)}B` : `€${Math.round(m)}M`;
@@ -150,6 +151,48 @@ const store = {
   get(k){ try{ return JSON.parse(localStorage.getItem(k)) }catch(e){ return null } },
   set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)) }catch(e){} }
 };
+
+/* ---- visit counter for the BigFact back office (admin.html) ----
+   Sends anonymous events: page view, country change, region tap, link click.
+   No cookies, no IP stored; a random id in localStorage counts unique visitors. */
+const TRACK = (() => {
+  const API = "https://obxaqlempjyweraiaynr.supabase.co/rest/v1/bigfact_events";
+  const KEY = "sb_publishable_bzEOvCVmmI3nKGzitOSRPQ_3Tw81Q9Y";
+  const rid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
+  let off = false, visitor, session;
+  try { off = localStorage.getItem("bigfact_notrack") === "1"; } catch(e){}
+  try { visitor = localStorage.getItem("bigfact_vid") || rid(); localStorage.setItem("bigfact_vid", visitor); } catch(e){ visitor = rid(); }
+  try { session = sessionStorage.getItem("bigfact_sid") || rid(); sessionStorage.setItem("bigfact_sid", session); } catch(e){ session = rid(); }
+  const ua = navigator.userAgent;
+  const device = /iPad|Tablet/i.test(ua) ? "tablet" : /Mobi|Android|iPhone/i.test(ua) ? "mobile" : "desktop";
+  const qs = new URLSearchParams(location.search);
+  const src = (qs.get("src") || qs.get("utm_source") || "").slice(0, 80);
+  let referrer = "";
+  try { if (document.referrer && new URL(document.referrer).host !== location.host) referrer = document.referrer.slice(0, 300); } catch(e){}
+  const cut = (v, n) => v == null ? null : String(v).slice(0, n);
+  function send(type, o = {}){
+    if (off) return;
+    const row = { type, visitor: cut(visitor, 40), session: cut(session, 40), country: cut(o.country, 60),
+      region: cut(o.region, 120), target: cut(o.target, 500), device, lang: cut(navigator.language, 20) };
+    if (type === "view"){ row.referrer = referrer; row.src = src; }
+    try {
+      fetch(API, { method: "POST",
+        headers: { apikey: KEY, "Content-Type": "application/json", Prefer: "return=minimal" },
+        body: JSON.stringify(row) }).catch(() => {});
+    } catch(e){}
+  }
+  // clicks on any link (YouTube channel, Short, etc.)
+  document.addEventListener("click", e => {
+    const a = e.target.closest && e.target.closest("a[href]");
+    if (!a || a.getAttribute("href") === "#") return;
+    send("click", { country: COUNTRY && COUNTRY.id, target: a.href });
+  }, true);
+  let viewed = false;
+  return {
+    country(id){ if (!viewed){ viewed = true; send("view", { country: id }); } else send("country", { country: id }); },
+    region(r){ send("region", { country: COUNTRY && COUNTRY.id, region: r }); }
+  };
+})();
 
 let INDEX = null, DATA = null, COUNTRY = null, MODE = "explore", SEL = null, GUESSED = null;
 const cache = {};
@@ -179,6 +222,7 @@ async function load(meta, regionSlug){
     }catch(e){ $("#app").innerHTML = `<div class="err">Couldn't load ${esc(meta.name)}.</div>`; return; }
     prepare(DATA);
     renderShell();
+    TRACK.country(meta.id);
   }
   renderChips();
   if (regionSlug){
@@ -295,7 +339,10 @@ function select(id, updateHash){
   if (sel) svg.insertBefore(sel, svg.querySelector(".hit, .crown")); // bring to front (outline not hidden)
   document.querySelectorAll(".row").forEach(r => r.classList.toggle("sel", r.dataset.id === id));
   renderCard(true);
-  if (updateHash) history.replaceState(null, "", `#${COUNTRY.id}/${slug(DATA.byId[id].region)}`);
+  if (updateHash){
+    history.replaceState(null, "", `#${COUNTRY.id}/${slug(DATA.byId[id].region)}`);
+    TRACK.region(DATA.byId[id].region);
+  }
 }
 
 function guess(id){

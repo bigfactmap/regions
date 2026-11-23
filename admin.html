@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>BigFact · Back office</title>
+<link rel="icon" href="favicon.png">
+<meta name="theme-color" content="#0B1020">
+<style>
+:root{
+  --bg:#0B1020; --panel:#121a30; --panel2:#18223d; --line:rgba(255,255,255,.08);
+  --text:#F5F7FB; --muted:#8C96B0; --yellow:#FFD21E; --red:#EF4444; --green:#22C55E; --blue:#60A5FA;
+  --ui:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--bg);color:var(--text);font-family:var(--ui);-webkit-text-size-adjust:100%}
+body{min-height:100vh;background:radial-gradient(1200px 600px at 50% -200px,#1a2550 0%,transparent 70%),var(--bg)}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+a{color:var(--blue)}
+.wrap{max-width:1100px;margin:0 auto;padding:16px 16px 60px}
+header{display:flex;align-items:center;gap:12px;padding:6px 0 16px;flex-wrap:wrap}
+header img{width:38px;height:38px;border-radius:10px}
+.brand{font-weight:900;font-size:22px}.brand span{color:var(--yellow)}
+.sub{color:var(--muted);font-size:13px}
+header .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:14px;scrollbar-width:none}
+.tab{flex:0 0 auto;padding:10px 16px;border-radius:999px;background:var(--panel);border:1px solid var(--line);font-weight:700;font-size:14px}
+.tab[aria-pressed="true"]{background:var(--yellow);color:#111;border-color:var(--yellow)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:16px;margin-bottom:14px}
+h2{font-size:13px;font-weight:900;letter-spacing:1.4px;color:var(--muted);text-transform:uppercase;margin:0 0 12px}
+h3{font-size:15px;font-weight:800;margin-bottom:8px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:14px}
+.kpi{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:18px;padding:14px 16px}
+.kpi .l{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.kpi .v{font-size:34px;font-weight:900;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi .h{font-size:12px;color:var(--muted);margin-top:2px}
+.kpi.y .v{color:var(--yellow)}
+.periods{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px;margin-bottom:14px;flex-wrap:wrap}
+.periods button{padding:8px 11px;border-radius:999px;font-size:13px;font-weight:800;color:var(--muted)}
+.periods button[aria-pressed="true"]{background:var(--text);color:var(--bg)}
+.grid2{display:grid;gap:14px}
+@media(min-width:860px){.grid2{grid-template-columns:1fr 1fr}}
+.list .row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:8px 6px;border-radius:10px;position:relative;font-size:14px}
+.list .row .n{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.list .row .n small{color:var(--muted)}
+.list .row .c{font-weight:900;font-variant-numeric:tabular-nums}
+.list .row .u{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;min-width:54px;text-align:right}
+.list .row .bar{position:absolute;left:0;bottom:2px;height:3px;border-radius:3px;background:var(--yellow);opacity:.7}
+.list .head{display:grid;grid-template-columns:1fr auto auto;gap:10px;padding:0 6px 6px;font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.8px}
+.list .head span:last-child{min-width:54px;text-align:right}
+.empty{color:var(--muted);font-size:14px;padding:6px}
+.chart svg{display:block;width:100%;height:auto}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+label{display:block;font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin:10px 0 5px}
+input[type=text],input[type=email],input[type=password],input[type=url]{width:100%;padding:11px 12px;border-radius:12px;background:#0d1426;border:1px solid var(--line);outline:none}
+input:focus{border-color:var(--yellow)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:11px 16px;border-radius:12px;background:var(--yellow);color:#111;font-weight:900;font-size:14px}
+.btn.sec{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
+.btn.red{background:rgba(239,68,68,.15);color:#fca5a5;border:1px solid rgba(239,68,68,.35)}
+.btn.small{padding:7px 10px;font-size:12px;border-radius:10px}
+.btn:disabled{opacity:.5;cursor:default}
+.msg{margin-top:10px;font-size:14px;padding:10px 12px;border-radius:12px;display:none}
+.msg.ok{display:block;background:rgba(34,197,94,.12);color:#86efac}
+.msg.err{display:block;background:rgba(239,68,68,.12);color:#fca5a5}
+.msg.info{display:block;background:rgba(96,165,250,.12);color:#bfdbfe}
+.steps{font-size:14px;line-height:1.7;color:#c8cfe0;margin:6px 0 4px 18px}
+.drop{border:2px dashed rgba(255,255,255,.18);border-radius:18px;padding:26px 14px;text-align:center;color:var(--muted);cursor:pointer}
+.drop.on{border-color:var(--yellow);color:var(--text)}
+.drop b{color:var(--text);font-size:16px;display:block;margin-bottom:4px}
+.preview{display:grid;gap:14px;margin-top:14px}
+@media(min-width:760px){.preview{grid-template-columns:1fr 1fr}}
+.preview svg{width:100%;height:auto;max-height:340px;background:#0d1426;border-radius:14px}
+.checks li{list-style:none;font-size:14px;padding:3px 0}
+.fields{display:grid;gap:0 12px;grid-template-columns:1fr 1fr}
+.fields .full{grid-column:1/3}
+.crow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.crow:first-child{border-top:0}
+.crow .fl{font-size:26px}
+.crow .nm b{display:block}
+.crow .nm small{color:var(--muted)}
+.crow .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.crow .vid{grid-column:1/4}
+.switch{display:flex;align-items:center;gap:12px;font-size:15px;cursor:pointer}
+.switch input{width:22px;height:22px;accent-color:var(--yellow)}
+.center{max-width:420px;margin:8vh auto 0}
+.hidden{display:none!important}
+code{background:#0d1426;padding:2px 6px;border-radius:6px;font-size:13px}
+.recent{font-size:13px}
+.recent .r{display:grid;grid-template-columns:110px 1fr;gap:8px;padding:5px 6px;border-top:1px solid var(--line)}
+.recent .r:first-child{border-top:0}
+.recent .t{color:var(--muted);font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img src="icon-192.png" alt="">
+    <div>
+      <div class="brand">Big<span>Fact</span> · Back office</div>
+      <div class="sub">Estatísticas e atualização do site</div>
+    </div>
+    <div class="right">
+      <a class="btn sec small" href="./" target="_blank" rel="noopener">Ver site ↗</a>
+      <button class="btn sec small hidden" id="logout">Sair</button>
+    </div>
+  </header>
+
+  <!-- LOGIN -->
+  <section id="login" class="center hidden">
+    <div class="panel">
+      <h3>Entrar</h3>
+      <p class="sub">Usa o email e a palavra-passe da tua conta Supabase (a mesma do MONDAY).</p>
+      <form id="loginForm">
+        <label for="em">Email</label>
+        <input type="email" id="em" autocomplete="username" required>
+        <label for="pw">Palavra-passe</label>
+        <input type="password" id="pw" autocomplete="current-password" required>
+        <div style="margin-top:14px"><button class="btn" type="submit" id="loginBtn">Entrar</button></div>
+      </form>
+      <div class="msg" id="loginMsg"></div>
+    </div>
+  </section>
+
+  <!-- APP -->
+  <section id="app" class="hidden">
+    <nav class="tabs">
+      <button class="tab" data-tab="stats" aria-pressed="true">📊 Estatísticas</button>
+      <button class="tab" data-tab="update" aria-pressed="false">⬆️ Atualizar site</button>
+      <button class="tab" data-tab="settings" aria-pressed="false">⚙️ Definições</button>
+    </nav>
+
+    <!-- STATS -->
+    <div id="tab-stats">
+      <div class="periods" id="periods">
+        <button data-d="1">Hoje</button>
+        <button data-d="7">7 dias</button>
+        <button data-d="30" aria-pressed="true">30 dias</button>
+        <button data-d="90">90 dias</button>
+        <button data-d="0">Tudo</button>
+        <button data-d="r" title="Atualizar">↻</button>
+      </div>
+      <div class="kpis" id="kpis"></div>
+      <div class="panel chart">
+        <h2>Visitas por dia</h2>
+        <div id="chart"></div>
+        <div class="legend"><span><i style="background:var(--yellow)"></i>Views</span><span><i style="background:var(--blue)"></i>Visitantes únicos</span></div>
+      </div>
+      <div class="grid2">
+        <div class="panel"><h2>🌍 Países mais vistos</h2><div class="list" id="lCountries"></div></div>
+        <div class="panel"><h2>🔗 De onde vêm</h2><div class="list" id="lOrigins"></div></div>
+        <div class="panel"><h2>👆 Links clicados</h2><div class="list" id="lLinks"></div></div>
+        <div class="panel"><h2>📍 Regiões mais clicadas</h2><div class="list" id="lRegions"></div></div>
+        <div class="panel"><h2>📱 Dispositivos</h2><div class="list" id="lDevices"></div></div>
+        <div class="panel"><h2>🕒 Últimas ações</h2><div class="recent" id="lRecent"></div></div>
+      </div>
+      <div class="msg" id="statsMsg"></div>
+    </div>
+
+    <!-- UPDATE -->
+    <div id="tab-update" class="hidden">
+      <div class="panel hidden" id="ghSetup">
+        <h3>🔑 Ligar ao GitHub (só 1 vez)</h3>
+        <p class="sub">Para publicar, o back office precisa de uma chave do GitHub. Fica guardada só neste browser.</p>
+        <ol class="steps">
+          <li>Passo 1 — Abre <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → novo token</a> (conta <b>bigfactmap</b>).</li>
+          <li>Passo 2 — Nome: <code>backoffice</code>. Validade: 1 ano.</li>
+          <li>Passo 3 — Repository access: <b>Only select repositories</b> → <code>regions</code>.</li>
+          <li>Passo 4 — Permissions → Repository → <b>Contents: Read and write</b>.</li>
+          <li>Passo 5 — Generate token → copia e cola aqui.</li>
+        </ol>
+        <label for="ghTok">Token do GitHub</label>
+        <input type="password" id="ghTok" placeholder="github_pat_…" autocomplete="off">
+        <div style="margin-top:12px"><button class="btn" id="ghSave">Guardar e testar</button></div>
+        <div class="msg" id="ghMsg"></div>
+      </div>
+
+      <div id="ghReady" class="hidden">
+        <div class="panel">
+          <h3>➕ Adicionar ou atualizar um país</h3>
+          <p class="sub">Exemplo: saiu o Short de Espanha → arrasta o <code>spain.json</code> para aqui → Publicar.</p>
+          <div class="drop" id="drop" tabindex="0">
+            <b>Arrasta o ficheiro .json para aqui</b>
+            ou toca para escolher
+            <input type="file" id="file" accept=".json,application/json" hidden>
+          </div>
+          <div id="pv" class="hidden">
+            <div class="preview">
+              <div id="pvMap"></div>
+              <div>
+                <ul class="checks" id="pvChecks"></ul>
+                <div class="fields">
+                  <div><label for="fId">Código (nome do ficheiro)</label><input type="text" id="fId"></div>
+                  <div><label for="fFlag">Bandeira</label><input type="text" id="fFlag" placeholder="🇪🇸"></div>
+                  <div class="full"><label for="fName">Nome no site</label><input type="text" id="fName"></div>
+                  <div class="full"><label for="fVideo">Link do Short (opcional)</label><input type="url" id="fVideo" placeholder="https://youtube.com/shorts/…"></div>
+                </div>
+                <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+                  <button class="btn" id="publish">🚀 Publicar no site</button>
+                  <button class="btn sec" id="cancelPv">Cancelar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="msg" id="upMsg"></div>
+        </div>
+
+        <div class="panel">
+          <h3>🗺️ Países no site</h3>
+          <p class="sub">Muda o link do Short, a ordem ou tira um país. Depois carrega em Guardar.</p>
+          <div id="clist"></div>
+          <label for="chan">Link do canal (botão vermelho ▶ YouTube)</label>
+          <input type="url" id="chan" placeholder="https://youtube.com/@BigFact">
+          <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn" id="saveList">💾 Guardar alterações</button>
+            <button class="btn sec" id="reloadList">↻ Recarregar</button>
+          </div>
+          <div class="msg" id="listMsg"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="tab-settings" class="hidden">
+      <div class="panel">
+        <h3>👤 As tuas visitas</h3>
+        <label class="switch"><input type="checkbox" id="notrack"> Não contar as minhas visitas neste browser</label>
+        <p class="sub" style="margin-top:8px">Liga isto no PC e no telemóvel (abre o back office em cada um). Assim as estatísticas só mostram visitantes reais.</p>
+      </div>
+      <div class="panel">
+        <h3>🔗 Links com origem (para as descrições do YouTube)</h3>
+        <p class="sub">Usa estes links na descrição de cada Short. Em "De onde vêm" aparece o nome do vídeo.</p>
+        <div id="srcLinks" style="margin-top:8px"></div>
+      </div>
+      <div class="panel">
+        <h3>🔑 GitHub</h3>
+        <p class="sub" id="ghState">—</p>
+        <div style="margin-top:10px"><button class="btn red small" id="ghForget">Esquecer token neste browser</button></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ---------- config ---------- */
+const SB = "https://obxaqlempjyweraiaynr.supabase.co";
+const SB_KEY = "sb_publishable_bzEOvCVmmI3nKGzitOSRPQ_3Tw81Q9Y";
+const REPO = "bigfactmap/regions", BRANCH = "main";
+const SITE = "https://bigfactmap.github.io/regions/";
+const CAT_OK = ["auto","energy","retail","paper","food","industry","mining","air","gold","steel","bet","fuel","tech","health","telecom","defense","pharma"];
+const CATC = {auto:"#3B82F6",energy:"#F59E0B",retail:"#22C55E",paper:"#84CC16",food:"#F97316",industry:"#A855F7",mining:"#EF4444",air:"#06B6D4",gold:"#FACC15",steel:"#EF4444",bet:"#EC4899",fuel:"#F43F5E",tech:"#818CF8",health:"#2DD4BF",telecom:"#38BDF8",defense:"#CBD5E1",pharma:"#F472B6"};
+const FLAGS = {portugal:"🇵🇹",spain:"🇪🇸",poland:"🇵🇱",romania:"🇷🇴",united_states:"🇺🇸",usa:"🇺🇸",sweden:"🇸🇪",france:"🇫🇷",germany:"🇩🇪",italy:"🇮🇹",united_kingdom:"🇬🇧",uk:"🇬🇧",brazil:"🇧🇷",netherlands:"🇳🇱",belgium:"🇧🇪",switzerland:"🇨🇭",austria:"🇦🇹",norway:"🇳🇴",denmark:"🇩🇰",finland:"🇫🇮",ireland:"🇮🇪",greece:"🇬🇷",czechia:"🇨🇿",hungary:"🇭🇺",canada:"🇨🇦",mexico:"🇲🇽",japan:"🇯🇵",china:"🇨🇳",india:"🇮🇳",australia:"🇦🇺"};
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = n => Number(n || 0).toLocaleString("pt-PT");
+const ls = {
+  get(k){ try{ return localStorage.getItem(k) }catch(e){ return null } },
+  set(k,v){ try{ localStorage.setItem(k, v) }catch(e){} },
+  del(k){ try{ localStorage.removeItem(k) }catch(e){} }
+};
+function msg(id, type, html){ const el = $(id); el.className = "msg " + (type || ""); el.innerHTML = html || ""; }
+const slugId = s => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/\.json$/,"").replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"");
+function b64encode(str){ const bytes = new TextEncoder().encode(str); let bin = ""; for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(bin); }
+function b64decode(b64){ const bin = atob(String(b64).replace(/\s/g,"")); const bytes = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i); return new TextDecoder().decode(bytes); }
+
+/* ---------- auth (Supabase) ---------- */
+let SESSION = null;
+try { SESSION = JSON.parse(ls.get("bigfact_admin_session")); } catch(e){}
+function saveSession(j){
+  SESSION = { access_token: j.access_token, refresh_token: j.refresh_token, expires_at: Date.now() + (j.expires_in || 3600) * 1000, email: j.user && j.user.email };
+  ls.set("bigfact_admin_session", JSON.stringify(SESSION));
+}
+async function authToken(body, grant){
+  const r = await fetch(`${SB}/auth/v1/token?grant_type=${grant}`, { method:"POST", headers:{ apikey: SB_KEY, "Content-Type":"application/json" }, body: JSON.stringify(body) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error_description || j.msg || j.message || "Falhou o login");
+  saveSession(j);
+}
+async function token(){
+  if (!SESSION) throw new Error("login");
+  if (Date.now() > SESSION.expires_at - 60000) await authToken({ refresh_token: SESSION.refresh_token }, "refresh_token");
+  return SESSION.access_token;
+}
+async function rpc(fn, args, retry = true){
+  const t = await token();
+  const r = await fetch(`${SB}/rest/v1/rpc/${fn}`, { method:"POST", headers:{ apikey: SB_KEY, Authorization:`Bearer ${t}`, "Content-Type":"application/json" }, body: JSON.stringify(args || {}) });
+  if (r.status === 401 && retry){ SESSION.expires_at = 0; return rpc(fn, args, false); }
+  const j = await r.json().catch(() => null);
+  if (!r.ok) throw new Error((j && (j.message || j.hint)) || `Erro ${r.status}`);
+  return j;
+}
+function logout(){ SESSION = null; ls.del("bigfact_admin_session"); show(); }
+
+$("#loginForm").onsubmit = async e => {
+  e.preventDefault();
+  $("#loginBtn").disabled = true; msg("#loginMsg", "info", "A entrar…");
+  try {
+    await authToken({ email: $("#em").value.trim(), password: $("#pw").value }, "password");
+    $("#pw").value = "";
+    if (ls.get("bigfact_notrack") == null) ls.set("bigfact_notrack", "1"); // don't count the owner by default
+    msg("#loginMsg"); show();
+  } catch(err){
+    msg("#loginMsg", "err", /invalid/i.test(err.message) ? "Email ou palavra-passe errados." : esc(err.message));
+  } finally { $("#loginBtn").disabled = false; }
+};
+$("#logout").onclick = logout;
+
+function show(){
+  const inn = !!SESSION;
+  $("#login").classList.toggle("hidden", inn);
+  $("#app").classList.toggle("hidden", !inn);
+  $("#logout").classList.toggle("hidden", !inn);
+  if (inn){ loadStats(); initSettings(); }
+}
+
+/* ---------- tabs ---------- */
+document.querySelectorAll(".tab").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".tab").forEach(x => x.setAttribute("aria-pressed", x === b));
+  ["stats","update","settings"].forEach(t => $("#tab-" + t).classList.toggle("hidden", t !== b.dataset.tab));
+  if (b.dataset.tab === "update") initUpdate();
+  if (b.dataset.tab === "settings") initSettings();
+});
+
+/* ---------- stats ---------- */
+let DAYS = 30, NAMES = {};
+const cname = id => NAMES[id] || `${FLAGS[id] || ""} ${String(id || "").replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}`.trim();
+async function siteCountries(){
+  try {
+    const j = await (await fetch("countries.json", { cache:"no-cache" })).json();
+    (j.countries || []).forEach(c => NAMES[c.id] = `${c.flag || ""} ${c.name}`.trim());
+    return j;
+  } catch(e){ return { countries: [] }; }
+}
+document.querySelectorAll("#periods button").forEach(b => b.onclick = () => {
+  if (b.dataset.d !== "r"){
+    DAYS = +b.dataset.d;
+    document.querySelectorAll("#periods button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  }
+  loadStats();
+});
+
+async function loadStats(){
+  msg("#statsMsg");
+  $("#kpis").innerHTML = `<div class="kpi"><div class="l">A carregar…</div><div class="v">…</div></div>`;
+  try {
+    await siteCountries();
+    const s = await rpc("bigfact_stats", { days: DAYS });
+    renderStats(s);
+  } catch(err){
+    if (err.message === "login" || /refresh|jwt|token/i.test(err.message)) return logout();
+    $("#kpis").innerHTML = "";
+    msg("#statsMsg", "err", /not allowed/i.test(err.message) ? "Esta conta não tem acesso às estatísticas." : "Não consegui ler as estatísticas: " + esc(err.message));
+  }
+}
+
+function renderStats(s){
+  const t = s.totals || {};
+  const perView = t.visitors ? (t.views / t.visitors).toFixed(1) : "0";
+  $("#kpis").innerHTML = [
+    ["Views", t.views, "páginas abertas", "y"],
+    ["Visitantes únicos", t.visitors, `${perView} views por pessoa`, ""],
+    ["Cliques em links", t.clicks, "ex.: ▶ YouTube, ver o Short", ""],
+    ["Regiões tocadas", t.regions, `${fmt(t.countries)} trocas de país`, ""]
+  ].map(([l,v,h,c]) => `<div class="kpi ${c}"><div class="l">${l}</div><div class="v">${fmt(v)}</div><div class="h">${h}</div></div>`).join("");
+
+  renderChart(s.daily || []);
+  list("#lCountries", (s.countries || []).map(x => ({ n: cname(x.name), c: x.views, u: x.visitors })), ["País","Views","Únicos"]);
+  list("#lOrigins", (s.origins || []).map(x => ({ n: x.name, c: x.views, u: x.visitors })), ["Origem","Views","Únicos"]);
+  list("#lLinks", (s.links || []).map(x => ({ n: prettyLink(x.name), c: x.clicks, u: x.visitors, href: x.name })), ["Link","Cliques","Únicos"]);
+  list("#lRegions", (s.regions || []).map(x => ({ n: `${x.name} <small>· ${esc(cname(x.country))}</small>`, raw: true, c: x.clicks, u: x.visitors })), ["Região","Toques","Únicos"]);
+  const dv = { mobile:"📱 Telemóvel", desktop:"💻 Computador", tablet:"📲 Tablet" };
+  list("#lDevices", (s.devices || []).map(x => ({ n: dv[x.name] || x.name, c: x.visitors, u: "" })), ["Tipo","Pessoas",""]);
+  const ty = { view:"👀 Abriu o site", country:"🌍 Mudou de país", region:"📍 Tocou numa região", click:"👆 Clicou num link" };
+  const rc = s.recent || [];
+  $("#lRecent").innerHTML = rc.length ? rc.map(r => {
+    const d = new Date(r.created_at);
+    const when = d.toLocaleDateString("pt-PT", { day:"2-digit", month:"2-digit" }) + " " + d.toLocaleTimeString("pt-PT", { hour:"2-digit", minute:"2-digit" });
+    const what = [ty[r.type] || r.type, r.country && cname(r.country), r.region, r.target && prettyLink(r.target)].filter(Boolean).map(esc).join(" · ");
+    return `<div class="r"><span class="t">${when}</span><span>${what}</span></div>`;
+  }).join("") : `<div class="empty">Ainda sem visitas neste período.</div>`;
+}
+
+function prettyLink(u){
+  try {
+    const x = new URL(u);
+    if (/youtube\.com|youtu\.be/.test(x.host)){
+      if (/shorts\//.test(x.pathname)) return "▶ Short " + x.pathname.split("/").pop();
+      if (/@/.test(x.pathname)) return "▶ Canal " + x.pathname.replace(/^\//,"");
+      return "▶ YouTube " + x.pathname;
+    }
+    return x.host.replace(/^www\./,"") + x.pathname;
+  } catch(e){ return u; }
+}
+
+function list(sel, rows, head){
+  const el = $(sel);
+  if (!rows.length){ el.innerHTML = `<div class="empty">Ainda sem dados neste período.</div>`; return; }
+  const max = Math.max(...rows.map(r => +r.c || 0), 1);
+  el.innerHTML = `<div class="head"><span>${head[0]}</span><span>${head[1]}</span><span>${head[2]}</span></div>` + rows.map(r =>
+    `<div class="row"><span class="n" title="${esc(r.href || "")}">${r.raw ? r.n : esc(r.n)}</span><span class="c">${fmt(r.c)}</span><span class="u">${r.u === "" ? "" : fmt(r.u)}</span><span class="bar" style="width:${Math.max(2, (+r.c || 0) / max * 100)}%"></span></div>`
+  ).join("");
+}
+
+function dayKey(d){ return d.toLocaleDateString("en-CA", { timeZone: "Europe/Lisbon" }); }
+function renderChart(daily){
+  const map = Object.fromEntries(daily.map(d => [d.day, d]));
+  let n = DAYS > 0 ? DAYS : 30;
+  if (DAYS === 0 && daily.length){
+    const first = new Date(daily[0].day + "T12:00:00Z");
+    n = Math.max(1, Math.round((Date.now() - first) / 864e5) + 1);
+  }
+  n = Math.min(n, 365);
+  const days = [];
+  for (let i = n - 1; i >= 0; i--){ const d = new Date(Date.now() - i * 864e5); days.push(dayKey(d)); }
+  const pts = days.map(k => ({ k, v: (map[k] && map[k].views) || 0, u: (map[k] && map[k].visitors) || 0 }));
+  const W = Math.max(340, Math.min(900, $("#chart").clientWidth || 900)), H = W < 600 ? 200 : 220, pl = 34, pr = 8, pt = 10, pb = 26;
+  const max = Math.max(4, ...pts.map(p => p.v));
+  const bw = (W - pl - pr) / pts.length;
+  const y = v => pt + (H - pt - pb) * (1 - v / max);
+  const ticks = [0, Math.round(max / 2), max];
+  const every = Math.ceil(pts.length / (W < 600 ? 5 : 8));
+  const bars = pts.map((p, i) => `<rect x="${pl + i * bw + bw * .15}" y="${y(p.v)}" width="${Math.max(1, bw * .7)}" height="${H - pb - y(p.v)}" rx="${Math.min(4, bw * .2)}" fill="#FFD21E" opacity=".9"><title>${p.k}: ${p.v} views, ${p.u} únicos</title></rect>`).join("");
+  const line = pts.map((p, i) => `${i ? "L" : "M"}${(pl + i * bw + bw / 2).toFixed(1)},${y(p.u).toFixed(1)}`).join("");
+  const dots = pts.length <= 45 ? pts.map((p, i) => `<circle cx="${pl + i * bw + bw / 2}" cy="${y(p.u)}" r="3" fill="#60A5FA"/>`).join("") : "";
+  const xl = pts.map((p, i) => (i % every === 0 || i === pts.length - 1) ? `<text x="${pl + i * bw + bw / 2}" y="${H - 8}" fill="#8C96B0" font-size="11" text-anchor="middle">${p.k.slice(8)}/${p.k.slice(5,7)}</text>` : "").join("");
+  const yl = ticks.map(t => `<line x1="${pl}" x2="${W - pr}" y1="${y(t)}" y2="${y(t)}" stroke="rgba(255,255,255,.07)"/><text x="${pl - 6}" y="${y(t) + 4}" fill="#8C96B0" font-size="11" text-anchor="end">${t}</text>`).join("");
+  $("#chart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Views por dia">${yl}${bars}<path d="${line}" fill="none" stroke="#60A5FA" stroke-width="2.5" stroke-linejoin="round"/>${dots}${xl}</svg>`;
+}
+
+/* ---------- GitHub ---------- */
+const GH = () => ls.get("bigfact_gh_token");
+async function gh(path, opt = {}){
+  const r = await fetch(`https://api.github.com/repos/${REPO}${path}`, { ...opt, headers: {
+    Accept: "application/vnd.github+json", Authorization: `Bearer ${GH()}`, "X-GitHub-Api-Version": "2022-11-28",
+    ...(opt.body ? { "Content-Type": "application/json" } : {}) } });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok){ const e = new Error(j.message || `GitHub erro ${r.status}`); e.status = r.status; throw e; }
+  return j;
+}
+async function ghGet(file){
+  try {
+    const j = await gh(`/contents/${encodeURIComponent(file)}?ref=${BRANCH}&t=${Date.now()}`);
+    return { sha: j.sha, text: j.content ? b64decode(j.content) : null };
+  } catch(e){ if (e.status === 404) return { sha: null, text: null }; throw e; }
+}
+async function ghPut(file, text, sha, message){
+  const body = { message, content: b64encode(text), branch: BRANCH };
+  if (sha) body.sha = sha;
+  return gh(`/contents/${encodeURIComponent(file)}`, { method: "PUT", body: JSON.stringify(body) });
+}
+function ghError(e){
+  if (e.status === 401) return "O token do GitHub não é válido ou expirou. Vai a Definições → Esquecer token e cria outro.";
+  if (e.status === 403) return "O token não tem permissão de escrita. Confirma: Contents → Read and write, repositório regions.";
+  if (e.status === 409) return "O ficheiro mudou entretanto. Carrega em ↻ Recarregar e tenta outra vez.";
+  return esc(e.message);
+}
+
+$("#ghSave").onclick = async () => {
+  const t = $("#ghTok").value.trim();
+  if (!t) return msg("#ghMsg", "err", "Cola o token primeiro.");
+  ls.set("bigfact_gh_token", t);
+  msg("#ghMsg", "info", "A testar…");
+  try {
+    const r = await gh("");
+    if (!(r.permissions && r.permissions.push)) throw Object.assign(new Error("sem escrita"), { status: 403 });
+    $("#ghTok").value = ""; msg("#ghMsg");
+    initUpdate(true);
+  } catch(e){ ls.del("bigfact_gh_token"); msg("#ghMsg", "err", ghError(e)); }
+};
+
+/* ---------- countries list ---------- */
+let LIST = null, LIST_SHA = null;
+async function initUpdate(force){
+  const has = !!GH();
+  $("#ghSetup").classList.toggle("hidden", has);
+  $("#ghReady").classList.toggle("hidden", !has);
+  if (has && (force || !LIST)) loadList();
+}
+async function loadList(){
+  msg("#listMsg", "info", "A ler o site…");
+  try {
+    const f = await ghGet("countries.json");
+    LIST = f.text ? JSON.parse(f.text) : { channel: "", countries: [] };
+    LIST.countries = LIST.countries || [];
+    LIST_SHA = f.sha;
+    renderList(); msg("#listMsg");
+  } catch(e){ msg("#listMsg", "err", "Não consegui ler o countries.json: " + ghError(e)); }
+}
+function renderList(){
+  $("#chan").value = LIST.channel || "";
+  const cs = LIST.countries;
+  $("#clist").innerHTML = cs.length ? cs.map((c, i) => `
+    <div class="crow" data-i="${i}">
+      <span class="fl">${esc(c.flag || "🏳️")}</span>
+      <span class="nm"><b>${esc(c.name)}</b><small>${esc(c.id)}.json</small></span>
+      <span class="acts">
+        <button class="btn sec small" data-a="up" ${i ? "" : "disabled"} title="Subir">↑</button>
+        <button class="btn sec small" data-a="down" ${i < cs.length - 1 ? "" : "disabled"} title="Descer">↓</button>
+        <button class="btn red small" data-a="del">Tirar</button>
+      </span>
+      <input class="vid" type="url" data-a="video" placeholder="Link do Short (https://youtube.com/shorts/…)" value="${esc(c.video || "")}">
+    </div>`).join("") : `<div class="empty">Ainda não há países no site.</div>`;
+  $("#clist").querySelectorAll(".crow").forEach(row => {
+    const i = +row.dataset.i;
+    row.querySelector('[data-a="video"]').oninput = e => { LIST.countries[i].video = e.target.value.trim(); };
+    row.querySelectorAll("button").forEach(b => b.onclick = () => {
+      const a = b.dataset.a, arr = LIST.countries;
+      if (a === "up") [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
+      if (a === "down") [arr[i + 1], arr[i]] = [arr[i], arr[i + 1]];
+      if (a === "del"){
+        if (!confirm(`Tirar ${arr[i].name} do site? (o ficheiro ${arr[i].id}.json fica no GitHub)`)) return;
+        arr.splice(i, 1);
+      }
+      renderList();
+      msg("#listMsg", "info", "Alterações por guardar. Carrega em 💾 Guardar.");
+    });
+  });
+}
+$("#chan").oninput = e => { if (LIST) LIST.channel = e.target.value.trim(); };
+$("#reloadList").onclick = () => loadList();
+$("#saveList").onclick = async () => {
+  if (!LIST) return;
+  const bad = LIST.countries.find(c => c.video && !/^https:\/\//.test(c.video)) || (LIST.channel && !/^https:\/\//.test(LIST.channel));
+  if (bad) return msg("#listMsg", "err", "Os links têm de começar por https://");
+  $("#saveList").disabled = true; msg("#listMsg", "info", "A guardar…");
+  try {
+    const r = await ghPut("countries.json", JSON.stringify(LIST, null, 2) + "\n", LIST_SHA, "Back office: atualizar lista de países");
+    LIST_SHA = r.content.sha;
+    msg("#listMsg", "ok", `✅ Guardado. O site atualiza em ~1 minuto. <a href="${SITE}" target="_blank" rel="noopener">Abrir site ↗</a>`);
+    siteCountries();
+  } catch(e){ msg("#listMsg", "err", ghError(e)); }
+  finally { $("#saveList").disabled = false; }
+};
+
+/* ---------- upload a country JSON ---------- */
+let UP = null;
+const drop = $("#drop"), file = $("#file");
+drop.onclick = () => file.click();
+drop.onkeydown = e => { if (e.key === "Enter" || e.key === " ") file.click(); };
+drop.ondragover = e => { e.preventDefault(); drop.classList.add("on"); };
+drop.ondragleave = () => drop.classList.remove("on");
+drop.ondrop = e => { e.preventDefault(); drop.classList.remove("on"); if (e.dataTransfer.files[0]) readFile(e.dataTransfer.files[0]); };
+file.onchange = () => { if (file.files[0]) readFile(file.files[0]); file.value = ""; };
+$("#cancelPv").onclick = () => { UP = null; $("#pv").classList.add("hidden"); msg("#upMsg"); };
+
+function validate(d){
+  const errs = [], warns = [];
+  if (!d || typeof d !== "object" || Array.isArray(d)) return { errs: ["Não é um ficheiro de país do BigFact."], warns };
+  if (!d.country) errs.push("Falta o campo \"country\" (nome do país).");
+  if (!Array.isArray(d.regions) || !d.regions.length){ errs.push("Falta a lista \"regions\"."); return { errs, warns }; }
+  const ids = new Set();
+  d.regions.forEach((r, i) => {
+    const w = `Região ${i + 1}${r && r.region ? " (" + r.region + ")" : ""}`;
+    if (!r || typeof r !== "object") return errs.push(`${w}: inválida.`);
+    if (!r.id) errs.push(`${w}: falta "id".`);
+    else if (ids.has(r.id)) errs.push(`${w}: "id" repetido.`); else ids.add(r.id);
+    if (!r.region) errs.push(`${w}: falta "region".`);
+    if (!r.company) errs.push(`${w}: falta "company".`);
+    if (typeof r.path !== "string" || !/^\s*M/i.test(r.path)) errs.push(`${w}: falta o desenho do mapa ("path").`);
+    if (!Array.isArray(r.label) || r.label.length < 2) errs.push(`${w}: falta "label".`);
+    if (r.revenue_eur_m != null && !isFinite(r.revenue_eur_m)) errs.push(`${w}: faturação não é um número.`);
+    if (r.cat && !CAT_OK.includes(r.cat)) warns.push(`${w}: cor "${r.cat}" desconhecida → fica cinzenta.`);
+  });
+  if (!d.year) warns.push("Falta \"year\" → o título fica sem ano.");
+  return { errs, warns };
+}
+
+function readFile(f){
+  msg("#upMsg");
+  if (!/\.json$/i.test(f.name)) return msg("#upMsg", "err", "Tem de ser um ficheiro .json");
+  if (f.size > 5 * 1024 * 1024) return msg("#upMsg", "err", "Ficheiro grande demais (máx. 5 MB).");
+  const rd = new FileReader();
+  rd.onload = () => {
+    let d;
+    try { d = JSON.parse(rd.result); } catch(e){ return msg("#upMsg", "err", "O ficheiro não é JSON válido: " + esc(e.message)); }
+    if (f.name.toLowerCase() === "countries.json") return msg("#upMsg", "err", "Esse é o countries.json. Aqui envias o ficheiro de um país (ex.: spain.json). A lista de países edita-se em baixo.");
+    const v = validate(d);
+    const id = slugId(f.name);
+    const existing = LIST && LIST.countries.find(c => c.id === id);
+    UP = { data: d, text: rd.result, ok: !v.errs.length };
+    $("#fId").value = id;
+    $("#fName").value = existing ? existing.name : (d.country || "");
+    $("#fFlag").value = existing ? (existing.flag || "") : (FLAGS[id] || "");
+    $("#fVideo").value = existing ? (existing.video || "") : "";
+    const n = Array.isArray(d.regions) ? d.regions.length : 0;
+    const conf = n ? d.regions.filter(r => r && r.revenue_eur_m != null).length : 0;
+    const items = [];
+    if (v.errs.length) items.push(...v.errs.slice(0, 8).map(e => `❌ ${esc(e)}`), v.errs.length > 8 ? `❌ … e mais ${v.errs.length - 8} erros` : "");
+    else {
+      items.push(`✅ ${esc(d.country)} · ${esc(d.year || "")}`, `✅ ${n} regiões no mapa`, `✅ ${conf} com faturação · ${n - conf} "#1 TOP SELLER"`);
+      items.push(existing ? `🔁 Já está no site → vai ser <b>atualizado</b>` : `🆕 País novo → vai ser <b>adicionado</b> ao site`);
+    }
+    items.push(...v.warns.slice(0, 5).map(w => `⚠️ ${esc(w)}`));
+    $("#pvChecks").innerHTML = items.filter(Boolean).map(x => `<li>${x}</li>`).join("");
+    $("#pvMap").innerHTML = v.errs.length ? "" : miniMap(d);
+    $("#publish").disabled = !UP.ok;
+    $("#pv").classList.remove("hidden");
+  };
+  rd.readAsText(f);
+}
+
+function miniMap(d){
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  for (const r of d.regions){
+    const nums = r.path.match(/-?\d+(\.\d+)?/g).map(Number);
+    for (let i = 0; i < nums.length; i += 2){ x0=Math.min(x0,nums[i]); x1=Math.max(x1,nums[i]); y0=Math.min(y0,nums[i+1]); y1=Math.max(y1,nums[i+1]); }
+  }
+  for (const b of Object.values(d.insets || {})){ x0=Math.min(x0,b[0]); y0=Math.min(y0,b[1]); x1=Math.max(x1,b[2]); y1=Math.max(y1,b[3]); }
+  const p = 12;
+  const insets = Object.values(d.insets || {}).map(b => `<rect x="${b[0]}" y="${b[1]}" width="${b[2]-b[0]}" height="${b[3]-b[1]}" rx="14" fill="none" stroke="rgba(255,255,255,.2)" stroke-dasharray="6 6"/>`).join("");
+  const paths = d.regions.map(r => `<path d="${esc(r.path)}" fill="${CATC[r.cat] || "#64748B"}" fill-opacity=".6" stroke="#0B1020" stroke-width="1.5"><title>${esc(r.region)}: ${esc(r.company)}</title></path>`).join("");
+  return `<svg viewBox="${x0-p} ${y0-p} ${x1-x0+2*p} ${y1-y0+2*p}" xmlns="http://www.w3.org/2000/svg">${insets}${paths}</svg>`;
+}
+
+$("#publish").onclick = async () => {
+  if (!UP || !UP.ok) return;
+  const id = slugId($("#fId").value), name = $("#fName").value.trim(), flag = $("#fFlag").value.trim(), video = $("#fVideo").value.trim();
+  if (!id) return msg("#upMsg", "err", "Falta o código (ex.: spain).");
+  if (["countries","index","admin"].includes(id)) return msg("#upMsg", "err", "Esse código não pode ser usado.");
+  if (!name) return msg("#upMsg", "err", "Falta o nome no site.");
+  if (video && !/^https:\/\//.test(video)) return msg("#upMsg", "err", "O link do Short tem de começar por https://");
+  $("#publish").disabled = true;
+  try {
+    msg("#upMsg", "info", `1/2 · A enviar ${esc(id)}.json…`);
+    const cur = await ghGet(`${id}.json`);
+    await ghPut(`${id}.json`, UP.text, cur.sha, `Back office: ${cur.sha ? "atualizar" : "adicionar"} ${name}`);
+    msg("#upMsg", "info", "2/2 · A atualizar a lista de países…");
+    const f = await ghGet("countries.json");
+    const L = f.text ? JSON.parse(f.text) : { channel: "", countries: [] };
+    L.countries = L.countries || [];
+    const ex = L.countries.find(c => c.id === id);
+    if (ex){ ex.name = name; ex.flag = flag; if (video) ex.video = video; }
+    else L.countries.push({ id, name, flag, video });
+    const r = await ghPut("countries.json", JSON.stringify(L, null, 2) + "\n", f.sha, `Back office: ${ex ? "atualizar" : "adicionar"} ${name} na lista`);
+    LIST = L; LIST_SHA = r.content.sha; renderList(); msg("#listMsg");
+    UP = null; $("#pv").classList.add("hidden");
+    msg("#upMsg", "ok", `✅ ${esc(flag)} ${esc(name)} publicado! Fica online em ~1 minuto. <a href="${SITE}#${esc(id)}" target="_blank" rel="noopener">Abrir ↗</a>`);
+    siteCountries();
+  } catch(e){ msg("#upMsg", "err", ghError(e)); }
+  finally { $("#publish").disabled = false; }
+};
+
+/* ---------- settings ---------- */
+async function initSettings(){
+  const nt = $("#notrack");
+  nt.checked = ls.get("bigfact_notrack") === "1";
+  nt.onchange = () => ls.set("bigfact_notrack", nt.checked ? "1" : "0");
+  $("#ghState").textContent = GH() ? "✅ Ligado ao GitHub neste browser." : "Ainda não ligado (vai a ⬆️ Atualizar site).";
+  const j = await siteCountries();
+  const cs = j.countries || [];
+  $("#srcLinks").innerHTML = cs.length ? cs.map(c => {
+    const u = `${SITE}?src=short-${c.id}#${c.id}`;
+    return `<div class="crow" style="grid-template-columns:auto 1fr auto"><span class="fl">${esc(c.flag || "")}</span><span class="nm"><b>${esc(c.name)}</b><small>${esc(u)}</small></span><span class="acts"><button class="btn sec small" data-u="${esc(u)}">Copiar</button></span></div>`;
+  }).join("") : `<div class="empty">Sem países.</div>`;
+  $("#srcLinks").querySelectorAll("button").forEach(b => b.onclick = async () => {
+    try { await navigator.clipboard.writeText(b.dataset.u); b.textContent = "Copiado ✓"; } catch(e){ prompt("Copia o link:", b.dataset.u); }
+    setTimeout(() => b.textContent = "Copiar", 1500);
+  });
+}
+$("#ghForget").onclick = () => { ls.del("bigfact_gh_token"); LIST = null; initSettings(); initUpdate(); };
+
+show();
+</script>
+</body>
+</html>
