@@ -12,6 +12,12 @@
       "name": "Spain",
       "flag": "🇪🇸",
       "video": ""
+    },
+    {
+      "id": "sweden",
+      "name": "Sweden",
+      "flag": "🇸🇪",
+      "video": ""
     }
   ]
 }
