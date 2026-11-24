@@ -1,6 +1,17 @@
 {
   "channel": "",
   "countries": [
-    { "id": "portugal", "name": "Portugal", "flag": "🇵🇹", "video": "" }
+    {
+      "id": "portugal",
+      "name": "Portugal",
+      "flag": "🇵🇹",
+      "video": ""
+    },
+    {
+      "id": "spain",
+      "name": "Spain",
+      "flag": "🇪🇸",
+      "video": ""
+    }
   ]
 }
